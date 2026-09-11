@@ -4,4 +4,4 @@ WORKDIR /app
 
 COPY workload/workload.py .
 
-CMD ["python", "workload.py"]
+ENTRYPOINT ["python", "workload.py"]
