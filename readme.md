@@ -317,3 +317,62 @@ reward = - (sla_violation_penalty)
 It accurately simulates:
 - **Throttling**: If allocated CPU is less than the demand in the trace, utilization is capped.
 - **SLA Violations**: Latency spikes proportionally to CPU/Memory deficits, simulating compute-starvation and OOM thrashing, generating the negative reward signal necessary for DQN training.
+
+---
+
+## Phase 6: DQN-based DRL Agent
+
+### Architecture
+The Deep Q-Network (DQN) agent maps the 11-dimensional normalized state vector from Phase 5 into 16 Q-values representing the expected future reward for each discrete CPU/Memory action.
+
+The architecture is a lightweight multi-layer perceptron (MLP) in PyTorch:
+```
+Input(11) → Linear(64) → ReLU → Linear(64) → ReLU → Linear(16)
+```
+
+Why DQN? The action space is a small discrete Cartesian product (4 CPU options × 4 Memory options = 16 actions). DQN is highly sample-efficient and stable for small discrete action spaces compared to continuous policy gradient methods like PPO or SAC.
+
+### Components
+
+- **Epsilon-Greedy Exploration**: During training, the agent explores random actions with probability `epsilon` (decaying from 1.0 to 0.05). During evaluation and inference, it acts greedily (`argmax Q(s, a)`).
+- **Replay Buffer**: A fixed-capacity deterministic buffer (`capacity=50000`) stores MDP transitions `(state, action, reward, next_state, done)` to break temporal correlations during mini-batch training.
+- **Target Network**: To stabilize learning, the Q-learning target is calculated using a separate Target Network `Q_target`, which is periodically synchronized with the online network.
+- **Reward / Objective**: The agent minimizes the penalties defined in Phase 5 (SLA violations, resource waste, under-provisioning, reallocations). The loss function is the Huber Loss (`SmoothL1Loss`), optimizing the Bellman equation.
+
+### Training & Evaluation
+
+The DQN agent is trained offline against the deterministic simulation environment (`NeuroScaleEnv`) without interacting with Docker.
+
+To run a sample training loop programmatically:
+```python
+from rl.agent import DQNAgentConfig
+from rl.config import EnvConfig
+from rl.trainer import DQNTrainer
+
+trainer = DQNTrainer(DQNAgentConfig(), EnvConfig())
+history = trainer.train(num_episodes=200, max_steps_per_episode=50, eval_freq=10)
+```
+
+During training, the agent is periodically evaluated on deterministic synthetic scenarios (e.g. CPU spikes, Memory spikes, under-provisioning cases). The best model is saved.
+
+### Checkpoint and Public API
+
+**Checkpoint Location**: `checkpoints/best_dqn.pt`
+
+**Public Interface**:
+```python
+from rl.agent import DQNAgent
+
+# Load pre-trained agent
+agent = DQNAgent.load("checkpoints/best_dqn.pt")
+
+# Predict optimal resource allocation
+state_vector = np.array([...]) # 11-dim normalized state
+action = agent.choose_action(state_vector)
+# -> {"cpu": 1.0, "memory": 256}
+```
+
+### Limitations
+- **Offline Training**: The agent is trained purely on synthetic simulation traces.
+- **No Docker Feedback Loop**: Phase 6 implements the agent, but it is not yet wired up to the live metric collector and Docker controller (planned for Phase 7).
+- **Static Action Space**: The agent cannot interpolate between the predefined discrete allocations.
