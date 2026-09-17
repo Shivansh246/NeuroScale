@@ -76,7 +76,12 @@ class Collector:
     def collect(self, container_id):
         """Collect and return timestamped structured metrics for the given container."""
         container = self.client.containers.get(container_id)
-        stats = container.stats(stream=False)
+        try:
+            stats = container.stats(stream=False)
+        except Exception as e:
+            if 'JSONDecodeError' in str(type(e)):
+                return None
+            return None
 
         cpu_stats = stats.get("cpu_stats", {})
         precpu_stats = stats.get("precpu_stats", {})

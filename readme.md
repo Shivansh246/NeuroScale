@@ -376,3 +376,33 @@ action = agent.choose_action(state_vector)
 - **Offline Training**: The agent is trained purely on synthetic simulation traces.
 - **No Docker Feedback Loop**: Phase 6 implements the agent, but it is not yet wired up to the live metric collector and Docker controller (planned for Phase 7).
 - **Static Action Space**: The agent cannot interpolate between the predefined discrete allocations.
+
+---
+
+## Phase 7: Closed-Loop Docker Integration
+
+Phase 7 brings all previous phases together into a thin orchestration layer (`control/loop.py`) that acts against a real Docker container.
+
+### Control Cycle Sequence
+1. **Observe**: Fetch live container metrics (`Collector`).
+2. **Warm-up**: Wait until a full rolling window (`window_size=12`) accumulates.
+3. **Predict**: Feed the window to the `TransformerPredictor` to estimate future CPU/RAM demand.
+4. **Detect**: Feed the window to the `AutoencoderAnomalyDetector` to compute the anomaly score.
+5. **Decide**: Construct the RL state and pass it to the `DQNAgent` to choose a deterministic, discrete resource allocation.
+6. **Control**: Apply the allocation safely via the `Controller`, respecting hard resource bounds.
+7. **Measure**: Calculate the reward based on SLA approximation (derived from simulated throttling since raw latency isn't available from generic containers) and resource waste.
+8. **Log**: Dump the entire structured cycle record to `data/control_loop.jsonl`.
+
+### Simulation vs. Real Mode
+The orchestration supports dynamic fallbacks. If trained checkpoints (`checkpoints/best_*.pt`) are missing, it initializes gracefully in **SIMULATION MODEL MODE** using untested initialized weights or stubs, making it safe to smoke-test orchestration without 10,000 episodes of pre-training.
+
+Regardless of model mode, the controller explicitly mutates the actual Docker container limits in real-time.
+
+### Logging Format
+All data points are written synchronously in an append-only, crash-safe JSONL file, allowing downstream analysis without requiring a database dependency.
+
+### Execution
+```bash
+# Run real Docker integration test (automatically handles container lifecycle)
+./scripts/run_closed_loop.py --cycles 15 --sleep 1.0
+```
