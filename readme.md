@@ -209,5 +209,63 @@ This is fixed at checkpoint load time and does not vary per prediction.
 ```bash
 source .venv/bin/activate
 python -m unittest tests.test_transformer -v
-# Ran 34 tests in ~1 s — OK
+# Ran 46 tests in ~1.2 s — OK
 ```
+
+---
+
+## Phase 4 — Autoencoder Anomaly Detection
+
+Lightweight fully-connected PyTorch autoencoder that flags anomalous workload behavior by measuring metric-window reconstruction error.
+
+### What It Detects
+
+The autoencoder learns the typical correlation patterns across time steps and resource channels (CPU percentage, CPU usage ns, memory MB, memory percentage) during normal operation. It detects:
+- Sudden uncharacteristic CPU spikes or drops
+- Unexpected memory leakage or rapid consumption
+- Out-of-distribution workload patterns that violate historical operating bounds
+
+### Reconstruction Error to Anomaly Score
+
+Input sequences of shape `(seq_len, feature_count)` are normalised using training statistics and flattened into a 1D vector of dimension `seq_len * feature_count`. The autoencoder compresses this into a low-dimensional bottleneck (latent representation) and attempts to reconstruct the input.
+
+The **anomaly score** is the Mean Squared Error (MSE) between the normalised input $x$ and its reconstruction $\hat{x}$:
+
+$$\text{score} = \frac{1}{D} \sum_{i=1}^D (x_i - \hat{x}_i)^2$$
+
+- Normal patterns: low reconstruction error (score < threshold)
+- Anomalous/perturbed patterns: high reconstruction error (score > threshold)
+
+### Threshold Calculation
+
+The decision threshold is determined deterministically from reconstruction errors on the normal validation set after training:
+
+$$\text{threshold} = \mu_{\text{val}} + k \cdot \sigma_{\text{val}}$$
+
+where:
+- $\mu_{\text{val}}$ is the mean validation reconstruction error
+- $\sigma_{\text{val}}$ is the standard deviation of validation reconstruction errors
+- $k$ is a configurable multiplier (`threshold_k`, default `3.0`)
+
+The threshold is persisted inside the checkpoint so that inference never recomputes it.
+
+### Inference Usage
+
+```python
+import numpy as np
+from anomaly.detector import AutoencoderAnomalyDetector
+
+detector = AutoencoderAnomalyDetector.from_checkpoint("checkpoints/best_autoencoder.pt")
+
+# sequence: (seq_len=12, feature_count=4) in raw (un-normalised) scale
+sequence = np.array(...)  # current 12-sample metric window
+result = detector.score(sequence)
+# → {"score": 0.0023, "is_anomaly": False}
+```
+
+### Limitations
+
+1. **Static Threshold**: The threshold is derived from offline validation data and does not adapt dynamically to slow, benign workload shifts.
+2. **Deterministic Distance, Not Probability**: The anomaly score represents geometric reconstruction error in normalised feature space, not a calibrated posterior probability.
+3. **Training Data Sensitivity**: The detector assumes training data is purely normal. Contamination in training data inflates the threshold and reduces sensitivity.
+4. **Point Window Evaluation**: Evaluates fixed-length sliding windows independently without cross-window temporal memory.
