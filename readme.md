@@ -406,3 +406,39 @@ All data points are written synchronously in an append-only, crash-safe JSONL fi
 # Run real Docker integration test (automatically handles container lifecycle)
 ./scripts/run_closed_loop.py --cycles 15 --sleep 1.0
 ```
+
+---
+
+## Phase 8: Dashboard, Evaluation & Real Model Pipeline
+
+Phase 8 introduces the transparent evaluation framework and tools to train real models locally for a genuine NeuroScale deployment.
+
+### 1. Training Real Models
+You can generate deterministic synthetic data and train the respective components via:
+```bash
+./scripts/train_transformer.py
+./scripts/train_autoencoder.py
+./scripts/train_dqn.py
+```
+Checkpoints are safely isolated under `checkpoints/` (git-ignored) to prevent repository bloat.
+
+### 2. End-to-End Real Model Demonstration
+Update the orchestrator execution to require trained checkpoints using `--mode real-model`. This strictly enforces loading actual `.pt` artifacts and disables silent stub substitution:
+```bash
+./scripts/run_closed_loop.py --mode real-model --cycles 15 --sleep 1.0
+```
+
+### 3. Baseline Comparison & Evaluation
+Evaluate NeuroScale against Static, Threshold, and Prediction-only baselines:
+```bash
+./scripts/evaluate.py
+```
+Outputs are appended to `data/evaluation_results.jsonl`.
+
+### 4. Interactive Dashboard
+Analyze live logs, predictions, anomalies, controller actions, and strategy comparisons via Streamlit:
+```bash
+streamlit run dashboard/app.py
+```
+
+*Note: The real model pipeline is designed for transparent evaluation against transparent baselines. Simulation results strictly use `--mode simulation` for testing.*

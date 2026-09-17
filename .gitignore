@@ -9,3 +9,8 @@ data/**/*.json
 checkpoints/
 *.pt
 *.pth
+checkpoints/
+data/*.jsonl
+data/*.json
+data/*.csv
+.streamlit/
