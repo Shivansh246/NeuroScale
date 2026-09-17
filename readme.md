@@ -269,3 +269,51 @@ result = detector.score(sequence)
 2. **Deterministic Distance, Not Probability**: The anomaly score represents geometric reconstruction error in normalised feature space, not a calibrated posterior probability.
 3. **Training Data Sensitivity**: The detector assumes training data is purely normal. Contamination in training data inflates the threshold and reduces sensitivity.
 4. **Point Window Evaluation**: Evaluates fixed-length sliding windows independently without cross-window temporal memory.
+
+---
+
+## Phase 5: DRL Environment + Control Policy Interface
+
+### Architecture
+
+NeuroScale models Docker resource allocation as a Markov Decision Process (MDP). Phase 5 introduces a lightweight, deterministic Gymnasium-compatible RL environment (`NeuroScaleEnv`) that isolates reinforcement learning from the live Docker runtime during offline training.
+
+### State Space
+
+The state is a 1D, 11-dimensional normalized `float32` vector:
+1. `current_cpu_util`
+2. `current_mem_util`
+3. `predicted_cpu_demand` (from Transformer)
+4. `predicted_mem_demand` (from Transformer)
+5. `current_cpu_alloc`
+6. `current_mem_alloc`
+7. `sla_latency`
+8. `anomaly_score` (from Autoencoder)
+9. `is_anomaly` (boolean -> 0/1)
+10. `host_cpu_avail`
+11. `host_mem_avail`
+
+### Action Space
+
+The action space is a small discrete Cartesian product mapping an index to a specific CPU/Memory allocation pair, configured via `ActionConfig`.
+- `cpu_options`: [0.25, 0.5, 1.0, 2.0] cores
+- `memory_options`: [128, 256, 512, 1024] MB
+Total Actions = 16.
+
+### Reward Function
+
+Rewards are modeled as penalties to be minimized:
+```python
+reward = - (sla_violation_penalty)
+         - (resource_waste_penalty)
+         - (under_provision_penalty)
+         - (reallocation_penalty)
+         - (anomaly_penalty)
+```
+
+### Simulation Model
+
+`NeuroScaleEnv` operates purely on deterministic traces (e.g. `[{"cpu_util": ..., "mem_util": ...}, ...]`).
+It accurately simulates:
+- **Throttling**: If allocated CPU is less than the demand in the trace, utilization is capped.
+- **SLA Violations**: Latency spikes proportionally to CPU/Memory deficits, simulating compute-starvation and OOM thrashing, generating the negative reward signal necessary for DQN training.
