@@ -103,3 +103,111 @@ result = controller.apply(
 )
 print(result)
 ```
+
+---
+
+## Phase 3: Transformer Prediction Module
+
+### Architecture
+
+```
+Input (batch, seq_len, feature_count)
+  → Linear projection → (batch, seq_len, d_model)
+  → Sinusoidal Positional Encoding
+  → Transformer Encoder (N layers)
+  → Last prediction_horizon time-steps
+  → Linear prediction head
+  → Output (batch, prediction_horizon, 2)  ← [cpu_percent, memory_percent]
+```
+
+### Model Configuration (`models/config.py`)
+
+| Parameter            | Default | Description                                     |
+|----------------------|---------|-------------------------------------------------|
+| `d_model`            | 64      | Embedding dimension                             |
+| `nhead`              | 4       | Attention heads                                 |
+| `num_encoder_layers` | 2       | Stacked encoder layers                          |
+| `dim_feedforward`    | 128     | Feed-forward hidden dimension                   |
+| `dropout`            | 0.1     | Dropout probability                             |
+| `prediction_horizon` | 1       | Future steps to predict                         |
+| `num_targets`        | 2       | CPU % and memory %                              |
+| `feature_count`      | 4       | Must match `len(PipelineConfig.feature_columns)`|
+
+### Training Command
+
+```bash
+# First collect data (Phase 2)
+python -m data.collector --container <id> --out data/raw_metrics.jsonl --duration 600
+
+# Then train the Transformer
+python -m training.transformer_trainer \
+    --raw-data data/raw_metrics.jsonl \
+    --epochs 100 \
+    --batch-size 32 \
+    --lr 1e-3 \
+    --checkpoint-dir checkpoints \
+    --seed 42
+```
+
+### Checkpoint
+
+Saved to `checkpoints/best_transformer.pt` (not committed to Git).
+
+Contains: `state_dict`, `model_config`, `feature_columns`, `target_columns`,
+`normalization` (mean/std), `epoch`, `val_loss`, `train_loss`.
+
+### Inference Example
+
+```python
+from models.predictor import TransformerPredictor
+import numpy as np
+
+predictor = TransformerPredictor.from_checkpoint("checkpoints/best_transformer.pt")
+
+# sequence: (seq_len=12, feature_count=4) in original (un-normalised) scale
+sequence = np.array(...)   # your 12-step window
+result = predictor.predict(sequence)
+# → {"cpu": 34.7, "memory": 12.1, "confidence": 0.61}
+```
+
+### Metrics
+
+Evaluated per target (CPU, memory) and overall:
+
+| Metric | Description                       |
+|--------|-----------------------------------|
+| MSE    | Mean Squared Error                |
+| MAE    | Mean Absolute Error               |
+| RMSE   | Root Mean Squared Error           |
+
+```python
+from evaluation.transformer_metrics import full_report
+report = full_report(y_true, y_pred)
+# → {"cpu": {"mse": ..., "mae": ..., "rmse": ...},
+#    "memory": {...}, "overall": {...}}
+```
+
+### Confidence Score
+
+Confidence is a **deterministic heuristic**:
+
+```
+confidence = exp(-sqrt(val_loss) / CONFIDENCE_SCALE)
+```
+
+where `val_loss` is the MSE on the validation set (in normalised units) saved
+in the checkpoint, and `CONFIDENCE_SCALE = 1.0`.
+
+- `val_loss = 0.0` → confidence = 1.0
+- `val_loss = 1.0` (RMSE = 1 normalised unit) → confidence ≈ 0.37
+- `val_loss = 4.0` → confidence ≈ 0.14
+
+This is fixed at checkpoint load time and does not vary per prediction.
+
+### Synthetic Demonstration
+
+```bash
+source .venv/bin/activate
+python -m unittest tests.test_transformer -v
+# Ran 34 tests in ~1 s — OK
+```

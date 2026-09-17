@@ -5,6 +5,7 @@ __pycache__/
 # Ignore pipeline runtime artifacts (generated JSONL and params)
 data/**/*.jsonl
 data/**/*.json
-models/
+# Ignore model checkpoints and large training artifacts
+checkpoints/
 *.pt
 *.pth
