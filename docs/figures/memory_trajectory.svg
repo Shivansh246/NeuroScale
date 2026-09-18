@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 420" width="800" height="420" style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+<text x="400.0" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b">Real Docker Demonstration: Memory Tracking &amp; Limit Allocation</text>
+<rect x="65.0" y="50" width="220.3658536585366" height="310" fill="#f8f9fa" opacity="0.8"/>
+<text x="175.1829268292683" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#6c757d">Warmup & Normal</text>
+<rect x="302.31707317073176" y="50" width="118.65853658536582" height="310" fill="#fee2e2" opacity="0.8"/>
+<text x="361.6463414634147" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#dc2626">CPU Spike</text>
+<rect x="437.9268292682927" y="50" width="118.65853658536577" height="310" fill="#fef3c7" opacity="0.8"/>
+<text x="497.2560975609756" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#d97706">Memory Spike</text>
+<rect x="573.5365853658536" y="50" width="186.46341463414637" height="310" fill="#e0f2fe" opacity="0.8"/>
+<text x="666.7682926829268" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#0284c7">Recovery</text>
+<line x1="65" y1="360.0" x2="760" y2="360.0" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="364.0" font-size="11" text-anchor="end" fill="#64748b">0 MB</text>
+<line x1="65" y1="287.8545454545455" x2="760" y2="287.8545454545455" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="291.8545454545455" font-size="11" text-anchor="end" fill="#64748b">256 MB</text>
+<line x1="65" y1="215.70909090909092" x2="760" y2="215.70909090909092" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="219.70909090909092" font-size="11" text-anchor="end" fill="#64748b">512 MB</text>
+<line x1="65" y1="143.56363636363633" x2="760" y2="143.56363636363633" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="147.56363636363633" font-size="11" text-anchor="end" fill="#64748b">768 MB</text>
+<line x1="65" y1="71.41818181818184" x2="760" y2="71.41818181818184" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="75.41818181818184" font-size="11" text-anchor="end" fill="#64748b">1024 MB</text>
+<path d="M 65.0 287.9 L 82.0 287.9 L 98.9 287.9 L 115.9 287.9 L 132.8 287.9 L 149.8 287.9 L 166.7 287.9 L 183.7 287.9 L 200.6 287.9 L 217.6 287.9 L 234.5 287.9 L 251.5 287.9 L 268.4 287.9 L 285.4 71.4 L 302.3 71.4 L 319.3 71.4 L 336.2 71.4 L 353.2 71.4 L 370.1 71.4 L 387.1 71.4 L 404.0 71.4 L 421.0 71.4 L 437.9 71.4 L 454.9 71.4 L 471.8 71.4 L 488.8 71.4 L 505.7 71.4 L 522.7 71.4 L 539.6 71.4 L 556.6 71.4 L 573.5 71.4 L 590.5 71.4 L 607.4 71.4 L 624.4 71.4 L 641.3 71.4 L 658.3 71.4 L 675.2 71.4 L 692.2 71.4 L 709.1 71.4 L 726.1 71.4 L 743.0 71.4 L 760.0 71.4 L 760.0 71.4" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="6,3"/>
+<path d="M 65.0,356.9 L 82.0,356.9 L 98.9,356.9 L 115.9,356.9 L 132.8,356.9 L 149.8,356.9 L 166.7,356.9 L 183.7,356.9 L 200.6,356.9 L 217.6,356.9 L 234.5,356.9 L 251.5,356.9 L 268.4,356.9 L 285.4,356.9 L 302.3,355.2 L 319.3,355.4 L 336.2,355.4 L 353.2,355.4 L 370.1,355.4 L 387.1,355.4 L 404.0,356.9 L 421.0,356.9 L 437.9,242.2 L 454.9,242.3 L 471.8,242.3 L 488.8,242.3 L 505.7,242.3 L 522.7,242.3 L 539.6,356.9 L 556.6,356.9 L 573.5,356.9 L 590.5,356.9 L 607.4,356.9 L 624.4,356.9 L 641.3,356.9 L 658.3,356.9 L 675.2,356.9 L 692.2,356.9 L 709.1,356.9 L 726.1,356.9 L 743.0,356.9 L 760.0,356.9" fill="none" stroke="#059669" stroke-width="2.5"/>
+<path d="M 251.5,356.4 L 268.4,356.4 L 285.4,356.4 L 302.3,356.6 L 319.3,355.1 L 336.2,354.4 L 353.2,354.0 L 370.1,353.7 L 387.1,353.5 L 404.0,353.3 L 421.0,353.2 L 437.9,352.7 L 454.9,352.6 L 471.8,352.4 L 488.8,351.9 L 505.7,351.9 L 522.7,351.9 L 539.6,352.2 L 556.6,352.2 L 573.5,352.2 L 590.5,352.2 L 607.4,352.2 L 624.4,352.2 L 641.3,352.2 L 658.3,352.2 L 675.2,352.3 L 692.2,352.3 L 709.1,352.3 L 726.1,352.4 L 743.0,352.4 L 760.0,352.4" fill="none" stroke="#7c3aed" stroke-width="2" stroke-dasharray="3,3"/>
+<line x1="65" y1="360" x2="760" y2="360" stroke="#475569" stroke-width="1.5"/>
+<line x1="65" y1="50" x2="65" y2="360" stroke="#475569" stroke-width="1.5"/>
+<line x1="65.0" y1="360" x2="65.0" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="65.0" y="378" font-size="11" text-anchor="middle" fill="#64748b">C1</text>
+<line x1="149.7560975609756" y1="360" x2="149.7560975609756" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="149.7560975609756" y="378" font-size="11" text-anchor="middle" fill="#64748b">C6</text>
+<line x1="234.5121951219512" y1="360" x2="234.5121951219512" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="234.5121951219512" y="378" font-size="11" text-anchor="middle" fill="#64748b">C11</text>
+<line x1="319.2682926829268" y1="360" x2="319.2682926829268" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="319.2682926829268" y="378" font-size="11" text-anchor="middle" fill="#64748b">C16</text>
+<line x1="404.0243902439024" y1="360" x2="404.0243902439024" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="404.0243902439024" y="378" font-size="11" text-anchor="middle" fill="#64748b">C21</text>
+<line x1="488.780487804878" y1="360" x2="488.780487804878" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="488.780487804878" y="378" font-size="11" text-anchor="middle" fill="#64748b">C26</text>
+<line x1="573.5365853658536" y1="360" x2="573.5365853658536" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="573.5365853658536" y="378" font-size="11" text-anchor="middle" fill="#64748b">C31</text>
+<line x1="658.2926829268292" y1="360" x2="658.2926829268292" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="658.2926829268292" y="378" font-size="11" text-anchor="middle" fill="#64748b">C36</text>
+<line x1="743.0487804878048" y1="360" x2="743.0487804878048" y2="365" stroke="#475569" stroke-width="1"/>
+<text x="743.0487804878048" y="378" font-size="11" text-anchor="middle" fill="#64748b">C41</text>
+<text x="412.5" y="405" font-size="12" font-weight="600" text-anchor="middle" fill="#334155">Control Cycle Number</text>
+<text x="20" y="205.0" font-size="12" font-weight="600" text-anchor="middle" fill="#334155" transform="rotate(-90 20 205.0)">Memory (MB)</text>
+<line x1="85" y1="382" x2="115" y2="382" stroke="#059669" stroke-width="2.5"/>
+<text x="120" y="386" font-size="11" fill="#1e293b">Actual RSS Memory</text>
+<line x1="255" y1="382" x2="285" y2="382" stroke="#7c3aed" stroke-width="2" stroke-dasharray="3,3"/>
+<text x="290" y="386" font-size="11" fill="#1e293b">Transformer Predicted Memory</text>
+<line x1="485" y1="382" x2="515" y2="382" stroke="#2563eb" stroke-width="2.5" stroke-dasharray="6,3"/>
+<text x="520" y="386" font-size="11" fill="#1e293b">Allocated Docker Limit (MB)</text>
+</svg>

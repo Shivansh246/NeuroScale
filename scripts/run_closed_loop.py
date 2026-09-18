@@ -20,6 +20,7 @@ from control.loop import Orchestrator
 from models.predictor import TransformerPredictor
 from anomaly.detector import AutoencoderAnomalyDetector
 from rl.agent import DQNAgent, DQNAgentConfig
+from rl.resource_factorized_agent import ResourceFactorizedDQNAgent, ResourceFactorizedAgentConfig
 from rl.actions import DiscreteActionSpace
 from rl.state import StateBuilder
 from rl.reward import RewardCalculator
@@ -51,6 +52,7 @@ def main():
     parser.add_argument("--cycles", type=int, default=25)
     parser.add_argument("--sleep", type=float, default=1.0)
     parser.add_argument("--mode", choices=["simulation", "real-model"], default="simulation", help="Model execution mode")
+    parser.add_argument("--log-file", default="data/control_loop.jsonl", help="Output JSONL log path")
     args = parser.parse_args()
 
     # Verify Docker is running
@@ -64,7 +66,12 @@ def main():
     use_simulation = (args.mode == "simulation")
 
     missing_checkpoints = []
-    for cp in ["checkpoints/best_transformer.pt", "checkpoints/best_autoencoder.pt", "checkpoints/best_dqn.pt"]:
+    required_cps = [
+        "checkpoints/best_transformer.pt",
+        "checkpoints/best_autoencoder.pt",
+        "checkpoints/best_resource_factorized_dqn.pt"
+    ]
+    for cp in required_cps:
         if not os.path.exists(cp):
             missing_checkpoints.append(cp)
 
@@ -79,17 +86,17 @@ def main():
         agent = DQNAgent(DQNAgentConfig())
         action_space = DiscreteActionSpace(ActionConfig())
     else:
-        print("Operating in REAL-MODEL mode.")
+        print("Operating in REAL-MODEL mode with Resource-Factorized DQN.")
         print("Loading Transformer...")
         predictor = TransformerPredictor.from_checkpoint("checkpoints/best_transformer.pt")
         print("Loading Autoencoder...")
         detector = AutoencoderAnomalyDetector.from_checkpoint("checkpoints/best_autoencoder.pt")
-        print("Loading DQN...")
-        agent = DQNAgent.load("checkpoints/best_dqn.pt")
+        print("Loading Resource-Factorized DQN...")
+        agent = ResourceFactorizedDQNAgent.load("checkpoints/best_resource_factorized_dqn.pt")
         action_space = agent.action_space
 
     stop_container(args.container)
-    run_container(name=args.container, duration=args.cycles * 2)
+    run_container(name=args.container, duration=max(args.cycles * 5, 120))
     time.sleep(2.0) # Let it start
 
     collector = Collector()
@@ -102,7 +109,8 @@ def main():
     config = ControlLoopConfig(
         window_size=12,
         warmup_cycles=12,
-        simulation_mode=use_simulation
+        simulation_mode=use_simulation,
+        log_file=args.log_file,
     )
 
     orchestrator = Orchestrator(

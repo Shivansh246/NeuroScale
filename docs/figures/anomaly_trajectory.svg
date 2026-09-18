@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 360" width="800" height="360" style="background-color: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+<text x="400.0" y="30" font-size="16" font-weight="bold" text-anchor="middle" fill="#1e293b">Real Docker Demonstration: Autoencoder Anomaly Score</text>
+<rect x="65.0" y="50" width="220.3658536585366" height="250" fill="#f8f9fa" opacity="0.8"/>
+<text x="175.1829268292683" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#6c757d">Warmup & Normal</text>
+<rect x="302.31707317073176" y="50" width="118.65853658536582" height="250" fill="#fee2e2" opacity="0.8"/>
+<text x="361.6463414634147" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#dc2626">CPU Spike</text>
+<rect x="437.9268292682927" y="50" width="118.65853658536577" height="250" fill="#fef3c7" opacity="0.8"/>
+<text x="497.2560975609756" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#d97706">Memory Spike</text>
+<rect x="573.5365853658536" y="50" width="186.46341463414637" height="250" fill="#e0f2fe" opacity="0.8"/>
+<text x="666.7682926829268" y="68" font-size="11" font-weight="600" text-anchor="middle" fill="#0284c7">Recovery</text>
+<line x1="65" y1="300.0" x2="760" y2="300.0" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="304.0" font-size="11" text-anchor="end" fill="#64748b">0</text>
+<line x1="65" y1="244.44444444444446" x2="760" y2="244.44444444444446" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="248.44444444444446" font-size="11" text-anchor="end" fill="#64748b">100</text>
+<line x1="65" y1="188.8888888888889" x2="760" y2="188.8888888888889" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="192.8888888888889" font-size="11" text-anchor="end" fill="#64748b">200</text>
+<line x1="65" y1="133.33333333333334" x2="760" y2="133.33333333333334" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="137.33333333333334" font-size="11" text-anchor="end" fill="#64748b">300</text>
+<line x1="65" y1="77.7777777777778" x2="760" y2="77.7777777777778" stroke="#e2e8f0" stroke-width="1" stroke-dasharray="4"/>
+<text x="57" y="81.7777777777778" font-size="11" text-anchor="end" fill="#64748b">400</text>
+<line x1="65" y1="299.9978811111111" x2="760" y2="299.9978811111111" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="2,2"/>
+<path d="M 65.0,300.0 L 82.0,300.0 L 98.9,300.0 L 115.9,300.0 L 132.8,300.0 L 149.8,300.0 L 166.7,300.0 L 183.7,300.0 L 200.6,300.0 L 217.6,300.0 L 234.5,300.0 L 251.5,300.0 L 268.4,300.0 L 285.4,300.0 L 302.3,299.4 L 319.3,297.1 L 336.2,291.4 L 353.2,281.2 L 370.1,265.5 L 387.1,244.3 L 404.0,222.2 L 421.0,205.2 L 437.9,191.6 L 454.9,178.1 L 471.8,164.4 L 488.8,149.4 L 505.7,130.3 L 522.7,109.9 L 539.6,93.0 L 556.6,78.5 L 573.5,67.0 L 590.5,60.7 L 607.4,60.4 L 624.4,59.7 L 641.3,58.7 L 658.3,58.6 L 675.2,58.4 L 692.2,58.1 L 709.1,58.1 L 726.1,58.3 L 743.0,58.3 L 760.0,58.3" fill="none" stroke="#d97706" stroke-width="2.5"/>
+<circle cx="251.5" cy="300.0" r="3" fill="#dc2626"/>
+<circle cx="268.4" cy="300.0" r="3" fill="#dc2626"/>
+<circle cx="285.4" cy="300.0" r="3" fill="#dc2626"/>
+<circle cx="302.3" cy="299.4" r="3" fill="#dc2626"/>
+<circle cx="319.3" cy="297.1" r="3" fill="#dc2626"/>
+<circle cx="336.2" cy="291.4" r="3" fill="#dc2626"/>
+<circle cx="353.2" cy="281.2" r="3" fill="#dc2626"/>
+<circle cx="370.1" cy="265.5" r="3" fill="#dc2626"/>
+<circle cx="387.1" cy="244.3" r="3" fill="#dc2626"/>
+<circle cx="404.0" cy="222.2" r="3" fill="#dc2626"/>
+<circle cx="421.0" cy="205.2" r="3" fill="#dc2626"/>
+<circle cx="437.9" cy="191.6" r="3" fill="#dc2626"/>
+<circle cx="454.9" cy="178.1" r="3" fill="#dc2626"/>
+<circle cx="471.8" cy="164.4" r="3" fill="#dc2626"/>
+<circle cx="488.8" cy="149.4" r="3" fill="#dc2626"/>
+<circle cx="505.7" cy="130.3" r="3" fill="#dc2626"/>
+<circle cx="522.7" cy="109.9" r="3" fill="#dc2626"/>
+<circle cx="539.6" cy="93.0" r="3" fill="#dc2626"/>
+<circle cx="556.6" cy="78.5" r="3" fill="#dc2626"/>
+<circle cx="573.5" cy="67.0" r="3" fill="#dc2626"/>
+<circle cx="590.5" cy="60.7" r="3" fill="#dc2626"/>
+<circle cx="607.4" cy="60.4" r="3" fill="#dc2626"/>
+<circle cx="624.4" cy="59.7" r="3" fill="#dc2626"/>
+<circle cx="641.3" cy="58.7" r="3" fill="#dc2626"/>
+<circle cx="658.3" cy="58.6" r="3" fill="#dc2626"/>
+<circle cx="675.2" cy="58.4" r="3" fill="#dc2626"/>
+<circle cx="692.2" cy="58.1" r="3" fill="#dc2626"/>
+<circle cx="709.1" cy="58.1" r="3" fill="#dc2626"/>
+<circle cx="726.1" cy="58.3" r="3" fill="#dc2626"/>
+<circle cx="743.0" cy="58.3" r="3" fill="#dc2626"/>
+<circle cx="760.0" cy="58.3" r="3" fill="#dc2626"/>
+<line x1="65" y1="300" x2="760" y2="300" stroke="#475569" stroke-width="1.5"/>
+<line x1="65" y1="50" x2="65" y2="300" stroke="#475569" stroke-width="1.5"/>
+<line x1="65.0" y1="300" x2="65.0" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="65.0" y="318" font-size="11" text-anchor="middle" fill="#64748b">C1</text>
+<line x1="149.7560975609756" y1="300" x2="149.7560975609756" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="149.7560975609756" y="318" font-size="11" text-anchor="middle" fill="#64748b">C6</text>
+<line x1="234.5121951219512" y1="300" x2="234.5121951219512" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="234.5121951219512" y="318" font-size="11" text-anchor="middle" fill="#64748b">C11</text>
+<line x1="319.2682926829268" y1="300" x2="319.2682926829268" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="319.2682926829268" y="318" font-size="11" text-anchor="middle" fill="#64748b">C16</text>
+<line x1="404.0243902439024" y1="300" x2="404.0243902439024" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="404.0243902439024" y="318" font-size="11" text-anchor="middle" fill="#64748b">C21</text>
+<line x1="488.780487804878" y1="300" x2="488.780487804878" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="488.780487804878" y="318" font-size="11" text-anchor="middle" fill="#64748b">C26</text>
+<line x1="573.5365853658536" y1="300" x2="573.5365853658536" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="573.5365853658536" y="318" font-size="11" text-anchor="middle" fill="#64748b">C31</text>
+<line x1="658.2926829268292" y1="300" x2="658.2926829268292" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="658.2926829268292" y="318" font-size="11" text-anchor="middle" fill="#64748b">C36</text>
+<line x1="743.0487804878048" y1="300" x2="743.0487804878048" y2="305" stroke="#475569" stroke-width="1"/>
+<text x="743.0487804878048" y="318" font-size="11" text-anchor="middle" fill="#64748b">C41</text>
+<text x="412.5" y="345" font-size="12" font-weight="600" text-anchor="middle" fill="#334155">Control Cycle Number</text>
+<text x="20" y="175.0" font-size="12" font-weight="600" text-anchor="middle" fill="#334155" transform="rotate(-90 20 175.0)">Reconstruction MSE</text>
+<line x1="85" y1="322" x2="115" y2="322" stroke="#d97706" stroke-width="2.5"/>
+<text x="120" y="326" font-size="11" fill="#1e293b">Autoencoder Reconstruction MSE</text>
+<circle cx="335" cy="322" r="3" fill="#dc2626"/>
+<text x="345" y="326" font-size="11" fill="#1e293b">Flagged Anomaly (`is_anomaly=True`)</text>
+<line x1="555" y1="322" x2="585" y2="322" stroke="#e11d48" stroke-width="1.5" stroke-dasharray="2,2"/>
+<text x="590" y="326" font-size="11" fill="#1e293b">Threshold (0.003814)</text>
+</svg>

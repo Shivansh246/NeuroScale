@@ -143,9 +143,11 @@ class TestTrainerAndEval(unittest.TestCase):
         self.assertTrue(len(results["normal"]["actions"]) > 0)
         
     def test_trainer_integration(self):
+        os.makedirs("test_checkpoints", exist_ok=True)
         agent_config = DQNAgentConfig(batch_size=8, seed=42)
         env_config = EnvConfig()
         trainer = DQNTrainer(agent_config, env_config)
+        trainer.checkpoint_path = "test_checkpoints/test_dqn_trainer.pt"
         
         # Run very short training
         history = trainer.train(num_episodes=2, max_steps_per_episode=10, eval_freq=2)
@@ -155,8 +157,8 @@ class TestTrainerAndEval(unittest.TestCase):
         self.assertTrue(os.path.exists(trainer.checkpoint_path))
         
         # Cleanup
-        if os.path.exists("checkpoints"):
-            shutil.rmtree("checkpoints")
+        if os.path.exists("test_checkpoints"):
+            shutil.rmtree("test_checkpoints")
 
 if __name__ == '__main__':
     unittest.main()

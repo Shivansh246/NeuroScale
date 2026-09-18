@@ -16,7 +16,13 @@ def load_jsonl(path):
                     data.append(json.loads(line))
     return pd.DataFrame(data)
 
-control_path = "data/control_loop.jsonl"
+available_sources = [
+    p for p in ["data/real_docker_demo.jsonl", "data/control_loop.jsonl"] if os.path.exists(p)
+]
+if not available_sources:
+    available_sources = ["data/control_loop.jsonl"]
+
+control_path = st.sidebar.selectbox("Control Loop Data File", available_sources)
 eval_path = "data/evaluation_results.jsonl"
 
 st.sidebar.header("Data Sources")
@@ -37,12 +43,23 @@ if not df_control.empty:
     st.header("C. Anomaly Detection")
     if 'anomaly_score' in df_control.columns:
         st.line_chart(df_control['anomaly_score'])
-        st.write(f"Total Anomalies Detected: {df_control['is_anomaly'].sum()}")
+        if 'is_anomaly' in df_control.columns:
+            st.write(f"Total Anomalies Detected: {df_control['is_anomaly'].sum()}")
         
-    st.header("D. Resource Control")
-    if 'current_cpu_alloc' in df_control.columns:
-        st.line_chart(df_control[['current_cpu_alloc', 'current_cpu']])
-        st.line_chart(df_control[['current_mem_alloc', 'current_memory']])
+    st.header("D. Resource Control & DQN Decisions")
+    alloc_cpu_col = 'selected_cpu_allocation' if 'selected_cpu_allocation' in df_control.columns else 'current_cpu_alloc'
+    alloc_mem_col = 'selected_memory_allocation' if 'selected_memory_allocation' in df_control.columns else 'current_mem_alloc'
+
+    if alloc_cpu_col in df_control.columns and 'current_cpu' in df_control.columns:
+        st.line_chart(df_control[[alloc_cpu_col, 'current_cpu']])
+    if alloc_mem_col in df_control.columns and 'current_memory' in df_control.columns:
+        st.line_chart(df_control[[alloc_mem_col, 'current_memory']])
+
+    st.header("E. SLA Performance")
+    if 'sla_latency' in df_control.columns:
+        st.line_chart(df_control['sla_latency'])
+        if 'sla_violation' in df_control.columns:
+            st.write(f"Total SLA Violations: {df_control['sla_violation'].sum()}")
 else:
     st.warning("No control loop data found.")
 

@@ -57,7 +57,9 @@ class Orchestrator:
         self.cycle_count += 1
         
         # 1. Collect real metrics
+        t_col_start = time.time()
         metrics = self.collector.collect(container_id)
+        collector_latency_ms = (time.time() - t_col_start) * 1000.0
         # If collector returns None (e.g. container stopped), handle it
         if not metrics:
             metrics = {col: 0.0 for col in self.config.feature_columns}
@@ -75,20 +77,28 @@ class Orchestrator:
             "current_memory": metrics.get("memory_usage_mb", 0.0),
             "current_cpu_alloc": self.current_alloc_cpu,
             "current_mem_alloc": self.current_alloc_mem,
+            "collector_latency_ms": collector_latency_ms,
+            "controller_operation_latency_ms": 0.0,
+            "model_inference_latency_ms": 0.0,
             "control_latency_ms": 0.0,
+            "cycle_wall_time_ms": 0.0,
+            "sampling_interval_ms": 1000.0,
             "simulation_mode": self.config.simulation_mode,
         }
         
         # Warmup check
         if len(self.rolling_window) < self.config.warmup_cycles:
             cycle_record["status"] = "warming_up"
-            cycle_record["control_latency_ms"] = (time.time() - start_time) * 1000.0
+            wall_ms = (time.time() - start_time) * 1000.0
+            cycle_record["control_latency_ms"] = wall_ms
+            cycle_record["cycle_wall_time_ms"] = wall_ms
             self.logger.log(cycle_record)
             return cycle_record
             
         sequence = self._extract_sequence()
         
         # 2. Predict & Detect
+        t_infer_start = time.time()
         prediction = self.predictor.predict(sequence)
         anomaly = self.detector.score(sequence)
         
@@ -115,11 +125,19 @@ class Orchestrator:
         cycle_record["sla_violation"] = latency > 200.0 # From reward config
         
         # 4. Build RL State
+        pred_cpu = prediction.get("cpu", 0.0)
+        pred_mem = prediction.get("memory", 0.0)
+        # If predictor output is percentage, convert to MB based on current allocation/limit
+        if "memory_percent" in getattr(self.predictor, "_target_columns", []):
+            pred_mem_mb = (pred_mem / 100.0) * float(self.current_alloc_mem)
+        else:
+            pred_mem_mb = pred_mem
+
         raw_state = {
             "current_cpu_util": cpu_util,
             "current_mem_util": mem_util,
-            "predicted_cpu_demand": prediction.get("cpu", 0.0),
-            "predicted_mem_demand": prediction.get("memory", 0.0),
+            "predicted_cpu_demand": pred_cpu,
+            "predicted_mem_demand": pred_mem_mb,
             "current_cpu_alloc": self.current_alloc_cpu,
             "current_mem_alloc": self.current_alloc_mem,
             "sla_latency": latency,
@@ -133,13 +151,28 @@ class Orchestrator:
         
         # 5. Decide (DQN)
         action_idx = self.agent.choose_action_index(state_vec, evaluate=True)
+        if hasattr(self.agent, "choose_branch_indices"):
+            cpu_idx, mem_idx = self.agent.choose_branch_indices(state_vec, evaluate=True)
+        else:
+            cpu_idx = action_idx // 4
+            mem_idx = action_idx % 4
+
         action_dict = self.action_space.get_action(action_idx)
         target_cpu = action_dict["cpu"]
         target_mem = action_dict["memory"]
+        model_inference_latency_ms = (time.time() - t_infer_start) * 1000.0
         
         cycle_record.update({
             "selected_action_cpu": target_cpu,
             "selected_action_memory": target_mem,
+            "selected_cpu_allocation": target_cpu,
+            "selected_memory_allocation": target_mem,
+            "action_index": action_idx,
+            "cpu_action_index": cpu_idx,
+            "mem_action_index": mem_idx,
+            "current_cpu_allocation": self.current_alloc_cpu,
+            "current_memory_allocation": self.current_alloc_mem,
+            "model_inference_latency_ms": model_inference_latency_ms,
         })
         
         # Calculate Reward for the previous transition
@@ -156,22 +189,71 @@ class Orchestrator:
         self.last_action_dict = action_dict
         
         # 6. Control (Apply)
+        docker_before = {}
+        docker_after = {}
+        docker_verified = False
+        controller_operation_latency_ms = 0.0
+
         if not self.config.simulation_mode:
+            # Query Docker state before reallocation
+            if hasattr(self.controller, "client") and self.controller.client is not None:
+                try:
+                    c_inspect = self.controller.client.containers.get(container_id)
+                    h_cfg = c_inspect.attrs.get("HostConfig", {})
+                    docker_before = {
+                        "cpu_quota": h_cfg.get("CpuQuota"),
+                        "cpu_period": h_cfg.get("CpuPeriod"),
+                        "memory_bytes": h_cfg.get("Memory"),
+                    }
+                except Exception:
+                    pass
+
+            t_ctrl_op_start = time.time()
             result = self.controller.apply(container_id, cpu=target_cpu, memory=target_mem)
+            controller_operation_latency_ms = (time.time() - t_ctrl_op_start) * 1000.0
             cycle_record["controller_success"] = result.get("success", False)
             cycle_record["controller_error"] = result.get("error", None)
+            cycle_record["error"] = result.get("error", None)
             
             if result.get("success", False):
                 self.current_alloc_cpu = target_cpu
                 self.current_alloc_mem = target_mem
+
+                # Query Docker state after reallocation to verify actual change
+                if hasattr(self.controller, "client") and self.controller.client is not None:
+                    try:
+                        c_inspect = self.controller.client.containers.get(container_id)
+                        c_inspect.reload()
+                        h_cfg = c_inspect.attrs.get("HostConfig", {})
+                        docker_after = {
+                            "cpu_quota": h_cfg.get("CpuQuota"),
+                            "cpu_period": h_cfg.get("CpuPeriod"),
+                            "memory_bytes": h_cfg.get("Memory"),
+                        }
+                        expected_quota = int(target_cpu * h_cfg.get("CpuPeriod", 100000))
+                        expected_mem = int(target_mem * 1024 * 1024)
+                        docker_verified = (
+                            h_cfg.get("CpuQuota") == expected_quota and
+                            h_cfg.get("Memory") == expected_mem
+                        )
+                    except Exception:
+                        pass
         else:
             # In simulation, assume success
             cycle_record["controller_success"] = True
+            cycle_record["error"] = None
             self.current_alloc_cpu = target_cpu
             self.current_alloc_mem = target_mem
             
         cycle_record["status"] = "active"
-        cycle_record["control_latency_ms"] = (time.time() - start_time) * 1000.0
+        wall_ms = (time.time() - start_time) * 1000.0
+        cycle_record["control_latency_ms"] = wall_ms
+        cycle_record["controller_latency"] = wall_ms
+        cycle_record["controller_operation_latency_ms"] = controller_operation_latency_ms
+        cycle_record["cycle_wall_time_ms"] = wall_ms
+        cycle_record["docker_before"] = docker_before
+        cycle_record["docker_after"] = docker_after
+        cycle_record["docker_verified"] = docker_verified
         
         # 7. Log
         self.logger.log(cycle_record)
