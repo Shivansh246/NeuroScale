@@ -215,7 +215,7 @@ class TransformerPredictor:
             # Map to the public keys "cpu" and "memory"
             if col == "cpu_percent":
                 result["cpu"] = original_val
-            elif col == "memory_percent":
+            elif col in ("memory_percent", "memory_usage_mb"):
                 result["memory"] = original_val
             # Additional targets (if any) are silently ignored in the
             # public interface but the inverse-transform is still applied

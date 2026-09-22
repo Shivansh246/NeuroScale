@@ -77,17 +77,18 @@ class Controller:
         try:
             container = self.client.containers.get(container_id)
 
-            update_kwargs = {
-                "cpu_period": cpu_period,
-                "cpu_quota": cpu_quota,
-                "mem_limit": f"{mem_val}m",
-            }
+            update_kwargs = {}
+            if cpu is not None:
+                update_kwargs["cpu_period"] = 100000
+                update_kwargs["cpu_quota"] = int(float(cpu) * 100000)
+            if memory is not None:
+                update_kwargs["mem_limit"] = f"{int(memory)}m"
 
             try:
                 self.client.api.update_container(
                     container.id,
                     **update_kwargs,
-                    memswap_limit=f"{mem_val}m",
+                    memswap_limit=f"{int(memory)}m" if memory is not None else None,
                 )
             except APIError as api_err:
                 # Fallback without memswap_limit if swap accounting is not enabled on host

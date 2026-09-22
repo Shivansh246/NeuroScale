@@ -36,6 +36,8 @@ class Orchestrator:
         
         self.cycle_count = 0
         self.rolling_window = collections.deque(maxlen=self.config.window_size)
+        self.prev_cpu_usage_ns = None
+        self.current_session_id = None
         
         # State tracking
         self.current_alloc_cpu = 1.0
@@ -51,6 +53,20 @@ class Orchestrator:
             data.append(row)
         return np.array(data, dtype=np.float32)
 
+    def _prepare_transformer_sequence(self, canonical_sequence: np.ndarray) -> np.ndarray:
+        """Apply Transformer-specific preprocessing to the canonical telemetry."""
+        seq = canonical_sequence.copy()
+        if "cpu_usage_ns_delta" in self.config.feature_columns:
+            idx = self.config.feature_columns.index("cpu_usage_ns_delta")
+            # Transformer was trained on log1p(max(0, delta))
+            seq[:, idx] = np.log1p(np.maximum(0, seq[:, idx]))
+        return seq
+
+    def _prepare_anomaly_sequence(self, canonical_sequence: np.ndarray) -> np.ndarray:
+        """Apply Autoencoder-specific preprocessing to the canonical telemetry."""
+        # Autoencoder was trained on raw delta, so return unaltered copy
+        return canonical_sequence.copy()
+
     def run_cycle(self, container_id: str, workload_mode: str = "unknown") -> Dict[str, Any]:
         """Execute one complete observe->predict->decide->control cycle."""
         start_time = time.time()
@@ -60,16 +76,39 @@ class Orchestrator:
         t_col_start = time.time()
         metrics = self.collector.collect(container_id)
         collector_latency_ms = (time.time() - t_col_start) * 1000.0
+        
+        counter_reset = False
+        
         # If collector returns None (e.g. container stopped), handle it
         if not metrics:
             metrics = {col: 0.0 for col in self.config.feature_columns}
             metrics["timestamp"] = time.time()
             metrics["container_id"] = container_id
             
+        # Compute cpu_usage_ns_delta
+        current_cpu_ns = metrics.get("cpu_usage_ns", 0)
+        
+        if self.current_session_id != container_id:
+            # First sample or container changed
+            self.current_session_id = container_id
+            metrics["cpu_usage_ns_delta"] = 0
+            self.prev_cpu_usage_ns = current_cpu_ns
+        else:
+            if current_cpu_ns < self.prev_cpu_usage_ns:
+                # Docker counter reset!
+                counter_reset = True
+                metrics["cpu_usage_ns_delta"] = current_cpu_ns
+            else:
+                metrics["cpu_usage_ns_delta"] = current_cpu_ns - self.prev_cpu_usage_ns
+            self.prev_cpu_usage_ns = current_cpu_ns
+            
         self.rolling_window.append(metrics)
         
         cycle_record = {
             "timestamp": time.time(),
+            "counter_reset": counter_reset,
+            "cpu_usage_ns": current_cpu_ns,
+            "cpu_usage_ns_delta": metrics.get("cpu_usage_ns_delta", 0),
             "cycle_number": self.cycle_count,
             "container_id": container_id,
             "workload_mode": workload_mode,
@@ -95,14 +134,18 @@ class Orchestrator:
             self.logger.log(cycle_record)
             return cycle_record
             
-        sequence = self._extract_sequence()
+        canonical_sequence = self._extract_sequence()
+        transformer_sequence = self._prepare_transformer_sequence(canonical_sequence)
+        anomaly_sequence = self._prepare_anomaly_sequence(canonical_sequence)
         
         # 2. Predict & Detect
         t_infer_start = time.time()
-        prediction = self.predictor.predict(sequence)
-        anomaly = self.detector.score(sequence)
+        prediction = self.predictor.predict(transformer_sequence)
+        anomaly = self.detector.score(anomaly_sequence)
         
         cycle_record.update({
+            "transformer_cpu_delta": float(transformer_sequence[-1, 1]) if "cpu_usage_ns_delta" in self.config.feature_columns else 0.0,
+            "anomaly_cpu_delta": float(anomaly_sequence[-1, 1]) if "cpu_usage_ns_delta" in self.config.feature_columns else 0.0,
             "predicted_cpu": prediction.get("cpu", 0.0),
             "predicted_memory": prediction.get("memory", 0.0),
             "prediction_confidence": prediction.get("confidence", 0.0),

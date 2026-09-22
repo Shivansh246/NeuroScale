@@ -52,6 +52,7 @@ def main():
     parser.add_argument("--cycles", type=int, default=25)
     parser.add_argument("--sleep", type=float, default=1.0)
     parser.add_argument("--mode", choices=["simulation", "real-model"], default="simulation", help="Model execution mode")
+    parser.add_argument("--predictor", choices=["production", "real"], default="production", help="Which transformer predictor to use")
     parser.add_argument("--log-file", default="data/control_loop.jsonl", help="Output JSONL log path")
     args = parser.parse_args()
 
@@ -65,9 +66,13 @@ def main():
     # Check for models
     use_simulation = (args.mode == "simulation")
 
+    transformer_checkpoint = "checkpoints/best_transformer.pt"
+    if args.predictor == "real":
+        transformer_checkpoint = "checkpoints/best_transformer_real.pt"
+
     missing_checkpoints = []
     required_cps = [
-        "checkpoints/best_transformer.pt",
+        transformer_checkpoint,
         "checkpoints/best_autoencoder.pt",
         "checkpoints/best_resource_factorized_dqn.pt"
     ]
@@ -87,8 +92,8 @@ def main():
         action_space = DiscreteActionSpace(ActionConfig())
     else:
         print("Operating in REAL-MODEL mode with Resource-Factorized DQN.")
-        print("Loading Transformer...")
-        predictor = TransformerPredictor.from_checkpoint("checkpoints/best_transformer.pt")
+        print(f"Loading Transformer ({args.predictor} predictor)...")
+        predictor = TransformerPredictor.from_checkpoint(transformer_checkpoint)
         print("Loading Autoencoder...")
         detector = AutoencoderAnomalyDetector.from_checkpoint("checkpoints/best_autoencoder.pt")
         print("Loading Resource-Factorized DQN...")
