@@ -1,0 +1,36 @@
+experiment:
+  name: "example_multi_container_run"
+  seed: 1337
+  duration_seconds: 600
+  sampling_interval_seconds: 1.0
+
+containers:
+  concurrent_instances: 3
+  base_image: "neuroscale-workload:latest"
+  network_name: "neuroscale_bench_net"
+  resource_constraints:
+    cpus: 1.5
+    memory_mb: 512
+
+workload_randomization:
+  enabled: true
+  min_phase_duration_seconds: 10
+  max_phase_duration_seconds: 45
+  profile_weights:
+    idle: 0.10
+    cpu_intensive: 0.30
+    memory_intensive: 0.20
+    disk_io_intensive: 0.15
+    network_intensive: 0.10
+    mixed: 0.15
+  intensity_ranges:
+    cpu_utilization_target: [30, 95]
+    memory_allocation_mb: [64, 450]
+    io_block_size_kb: [8, 512]
+    network_packet_rate_mbps: [10, 80]
+
+export:
+  export_csv: true
+  export_jsonl: true
+  sync_to_data_raw_metrics: true
+  datasets_dir: "datasets"

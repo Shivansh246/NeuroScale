@@ -7,6 +7,7 @@ import collections
 
 from .config import ControlLoopConfig
 from .logger import CycleLogger
+from data.preprocessing import TelemetryFeaturePipeline
 
 class Orchestrator:
     """End-to-End Orchestrator for NeuroScale."""
@@ -34,38 +35,43 @@ class Orchestrator:
         self.reward_calc = reward_calculator
         self.logger = CycleLogger(self.config.log_file)
         
+        self.pipeline = TelemetryFeaturePipeline(feature_columns=self.config.feature_columns)
         self.cycle_count = 0
         self.rolling_window = collections.deque(maxlen=self.config.window_size)
-        self.prev_cpu_usage_ns = None
-        self.current_session_id = None
         
         # State tracking
         self.current_alloc_cpu = 1.0
         self.current_alloc_mem = 256
         self.prev_raw_state = None
         self.last_action_dict = None
+
+    @property
+    def prev_cpu_usage_ns(self):
+        return self.pipeline.prev_cpu_usage_ns
+
+    @prev_cpu_usage_ns.setter
+    def prev_cpu_usage_ns(self, val):
+        self.pipeline.prev_cpu_usage_ns = val
+
+    @property
+    def current_session_id(self):
+        return self.pipeline.current_session_id
+
+    @current_session_id.setter
+    def current_session_id(self, val):
+        self.pipeline.current_session_id = val
         
     def _extract_sequence(self) -> np.ndarray:
-        """Convert the rolling window into a numpy array matching feature_columns."""
-        data = []
-        for metric_dict in self.rolling_window:
-            row = [metric_dict.get(col, 0.0) for col in self.config.feature_columns]
-            data.append(row)
-        return np.array(data, dtype=np.float32)
+        """Convert the rolling window into a model-ready numpy array using the unified pipeline."""
+        return self.pipeline.extract_feature_sequence(self.rolling_window, self.config.feature_columns)
 
     def _prepare_transformer_sequence(self, canonical_sequence: np.ndarray) -> np.ndarray:
-        """Apply Transformer-specific preprocessing to the canonical telemetry."""
-        seq = canonical_sequence.copy()
-        if "cpu_usage_ns_delta" in self.config.feature_columns:
-            idx = self.config.feature_columns.index("cpu_usage_ns_delta")
-            # Transformer was trained on log1p(max(0, delta))
-            seq[:, idx] = np.log1p(np.maximum(0, seq[:, idx]))
-        return seq
+        """Deprecated compatibility method: delegates to unified feature pipeline."""
+        return self.pipeline.transform_sequence(canonical_sequence, self.config.feature_columns)
 
     def _prepare_anomaly_sequence(self, canonical_sequence: np.ndarray) -> np.ndarray:
-        """Apply Autoencoder-specific preprocessing to the canonical telemetry."""
-        # Autoencoder was trained on raw delta, so return unaltered copy
-        return canonical_sequence.copy()
+        """Unified with transformer: both models receive identical feature representation."""
+        return self.pipeline.transform_sequence(canonical_sequence, self.config.feature_columns)
 
     def run_cycle(self, container_id: str, workload_mode: str = "unknown") -> Dict[str, Any]:
         """Execute one complete observe->predict->decide->control cycle."""
@@ -77,30 +83,15 @@ class Orchestrator:
         metrics = self.collector.collect(container_id)
         collector_latency_ms = (time.time() - t_col_start) * 1000.0
         
-        counter_reset = False
-        
         # If collector returns None (e.g. container stopped), handle it
         if not metrics:
             metrics = {col: 0.0 for col in self.config.feature_columns}
             metrics["timestamp"] = time.time()
             metrics["container_id"] = container_id
             
-        # Compute cpu_usage_ns_delta
+        # Compute cpu_usage_ns_delta and track resets via unified pipeline
+        delta, counter_reset = self.pipeline.compute_delta(metrics, container_id)
         current_cpu_ns = metrics.get("cpu_usage_ns", 0)
-        
-        if self.current_session_id != container_id:
-            # First sample or container changed
-            self.current_session_id = container_id
-            metrics["cpu_usage_ns_delta"] = 0
-            self.prev_cpu_usage_ns = current_cpu_ns
-        else:
-            if current_cpu_ns < self.prev_cpu_usage_ns:
-                # Docker counter reset!
-                counter_reset = True
-                metrics["cpu_usage_ns_delta"] = current_cpu_ns
-            else:
-                metrics["cpu_usage_ns_delta"] = current_cpu_ns - self.prev_cpu_usage_ns
-            self.prev_cpu_usage_ns = current_cpu_ns
             
         self.rolling_window.append(metrics)
         
@@ -134,18 +125,16 @@ class Orchestrator:
             self.logger.log(cycle_record)
             return cycle_record
             
-        canonical_sequence = self._extract_sequence()
-        transformer_sequence = self._prepare_transformer_sequence(canonical_sequence)
-        anomaly_sequence = self._prepare_anomaly_sequence(canonical_sequence)
+        feature_sequence = self._extract_sequence()
         
-        # 2. Predict & Detect
+        # 2. Predict & Detect (both models receive identical feature tensors)
         t_infer_start = time.time()
-        prediction = self.predictor.predict(transformer_sequence)
-        anomaly = self.detector.score(anomaly_sequence)
+        prediction = self.predictor.predict(feature_sequence)
+        anomaly = self.detector.score(feature_sequence)
         
         cycle_record.update({
-            "transformer_cpu_delta": float(transformer_sequence[-1, 1]) if "cpu_usage_ns_delta" in self.config.feature_columns else 0.0,
-            "anomaly_cpu_delta": float(anomaly_sequence[-1, 1]) if "cpu_usage_ns_delta" in self.config.feature_columns else 0.0,
+            "transformer_cpu_delta": float(feature_sequence[-1, 1]) if "cpu_usage_ns_delta" in self.config.feature_columns else 0.0,
+            "anomaly_cpu_delta": float(feature_sequence[-1, 1]) if "cpu_usage_ns_delta" in self.config.feature_columns else 0.0,
             "predicted_cpu": prediction.get("cpu", 0.0),
             "predicted_memory": prediction.get("memory", 0.0),
             "prediction_confidence": prediction.get("confidence", 0.0),

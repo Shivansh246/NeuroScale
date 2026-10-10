@@ -38,11 +38,15 @@ import numpy as np
 
 from data.config import PipelineConfig
 from data.normalization import Normalizer
-from data.preprocessing import load_jsonl, resample_records
+from data.preprocessing import load_jsonl, resample_records, TelemetryFeaturePipeline
 from data.windows import generate_windows
 
 
-def _extract_arrays(records, cfg: PipelineConfig) -> Tuple[np.ndarray, np.ndarray]:
+def _extract_arrays(
+    records,
+    cfg: PipelineConfig,
+    pipeline: TelemetryFeaturePipeline = None,
+) -> Tuple[np.ndarray, np.ndarray]:
     """Convert a list of validated records into feature and target arrays.
 
     Parameters
@@ -51,11 +55,13 @@ def _extract_arrays(records, cfg: PipelineConfig) -> Tuple[np.ndarray, np.ndarra
         Validated metric dictionaries.
     cfg : PipelineConfig
         Configuration specifying which columns are features/targets.
+    pipeline : TelemetryFeaturePipeline, optional
+        Unified feature pipeline for model-ready transformations.
     """
-    features = []
+    pipe = pipeline or TelemetryFeaturePipeline(feature_columns=cfg.feature_columns)
+    features = pipe.extract_feature_sequence(records, cfg.feature_columns)
     targets = []
     for rec in records:
-        features.append([rec[col] for col in cfg.feature_columns])
         targets.append([rec[col] for col in cfg.target_columns])
     return np.array(features, dtype=float), np.array(targets, dtype=float)
 
@@ -100,8 +106,12 @@ def load_dataset(cfg: PipelineConfig = None) -> Dict[str, List[Tuple[np.ndarray,
     # 2. Validate and resample
     resampled = resample_records(records, interval_seconds=cfg.sampling_interval_seconds)
 
-    # 3. Extract feature/target arrays
-    features, targets = _extract_arrays(resampled, cfg)
+    # 3. Process features through unified pipeline
+    pipeline = TelemetryFeaturePipeline(feature_columns=cfg.feature_columns)
+    processed = pipeline.process_records(resampled)
+
+    # 4. Extract feature/target arrays
+    features, targets = _extract_arrays(processed, cfg, pipeline=pipeline)
 
     # 4. Split
     (train_f, train_t), (val_f, val_t), (test_f, test_t) = _chronological_split(features, targets, cfg)

@@ -1,0 +1,56 @@
+version: '3.8'
+
+networks:
+  neuroscale_bench_net:
+    name: neuroscale_bench_net
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+services:
+  # In-network traffic sink for network-intensive benchmarks
+  net_sink:
+    image: python:3.11-slim
+    container_name: neuroscale-net-sink
+    networks:
+      neuroscale_bench_net:
+        ipv4_address: 172.28.0.10
+    command: python -m http.server 8080 --bind 0.0.0.0
+    restart: unless-stopped
+
+  # Concurrent benchmark worker 1
+  worker_1:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.workload
+    image: neuroscale-workload:latest
+    container_name: neuroscale-worker-1
+    networks:
+      - neuroscale_bench_net
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+    labels:
+      neuroscale.role: "benchmark_worker"
+      neuroscale.id: "worker-1"
+
+  # Concurrent benchmark worker 2
+  worker_2:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.workload
+    image: neuroscale-workload:latest
+    container_name: neuroscale-worker-2
+    networks:
+      - neuroscale_bench_net
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1024M
+    labels:
+      neuroscale.role: "benchmark_worker"
+      neuroscale.id: "worker-2"

@@ -1,0 +1,97 @@
+{
+  "experiment_id": "083761bd-29f8-4bb9-a841-02559c559da7",
+  "created_at_utc": "2026-10-10T08:43:46.856156+00:00",
+  "start_time_utc": "2026-10-10T07:43:44.478774+00:00",
+  "end_time_utc": "2026-10-10T08:43:46.633116+00:00",
+  "random_seed": 1337,
+  "environment": {
+    "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "system": "Darwin",
+    "release": "27.0.0",
+    "machine": "arm64",
+    "python_version": "3.14.7",
+    "python_compiler": "Clang 21.0.0 (clang-2100.1.1.101)",
+    "docker_version": "29.8.2",
+    "cpu_count": 10,
+    "total_ram_bytes": 17179869184,
+    "total_ram_gb": 16.0
+  },
+  "configuration": {
+    "experiment": {
+      "name": "production_docker_1hr_benchmark",
+      "seed": 1337,
+      "duration_seconds": 3600,
+      "sampling_interval_seconds": 1.0
+    },
+    "containers": {
+      "concurrent_instances": 2,
+      "base_image": "neuroscale-workload:latest",
+      "network_name": "neuroscale_bench_net",
+      "resource_constraints": {
+        "cpus": 2.0,
+        "memory_mb": 1024
+      }
+    },
+    "workload_randomization": {
+      "enabled": true,
+      "min_phase_duration_seconds": 30,
+      "max_phase_duration_seconds": 60,
+      "profile_weights": {
+        "idle": 0.15,
+        "cpu_intensive": 0.25,
+        "memory_intensive": 0.2,
+        "disk_io_intensive": 0.15,
+        "network_intensive": 0.1,
+        "mixed": 0.15
+      },
+      "intensity_ranges": {
+        "cpu_utilization_target": [
+          20,
+          100
+        ],
+        "memory_allocation_mb": [
+          128,
+          896
+        ],
+        "io_block_size_kb": [
+          4,
+          1024
+        ],
+        "network_packet_rate_mbps": [
+          5,
+          100
+        ]
+      }
+    },
+    "export": {
+      "export_csv": true,
+      "export_jsonl": true,
+      "sync_to_data_raw_metrics": true,
+      "datasets_dir": "datasets"
+    }
+  },
+  "experiment_summary": {
+    "experiment_id": "083761bd-29f8-4bb9-a841-02559c559da7",
+    "experiment_name": "production_docker_1hr_benchmark",
+    "start_time_utc": "2026-10-10T07:43:44.478774+00:00",
+    "end_time_utc": "2026-10-10T08:43:46.633116+00:00",
+    "duration_seconds": 3602.15,
+    "completed": true,
+    "containers_executed": 2,
+    "records": {
+      "collected": 3578,
+      "accepted": 3578,
+      "rejected": 0,
+      "restart_events": 0
+    },
+    "validation_detail": {
+      "accepted": 3578,
+      "rejected": 0,
+      "warnings": 0,
+      "missing_fields": 0,
+      "type_mismatches": 0,
+      "container_restarts": 0
+    },
+    "output_files": {}
+  }
+}

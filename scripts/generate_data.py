@@ -19,15 +19,19 @@ def generate_synthetic_jsonl(path, n_samples=1000):
     memory_mb = np.clip(memory_mb, 10.0, 1024.0)
     
     start_time = time.time() - (n_samples * 10)
-    
+    cumulative_cpu_ns = 0
+
     with open(path, "w") as f:
         for i in range(n_samples):
+            delta_ns = int(cpu_percent[i] * 1e7)
+            cumulative_cpu_ns += delta_ns
             record = {
                 "timestamp": start_time + i * 10,
                 "container_id": "synthetic",
                 "container_name": "synthetic",
                 "cpu_percent": float(cpu_percent[i]),
-                "cpu_usage_ns": int(cpu_percent[i] * 1e7),
+                "cpu_usage_ns": int(cumulative_cpu_ns),
+                "cpu_usage_ns_delta": int(delta_ns),
                 "memory_usage_mb": float(memory_mb[i]),
                 "memory_usage_bytes": int(memory_mb[i] * 1024 * 1024),
                 "memory_limit_mb": 1024.0,

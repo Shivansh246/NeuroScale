@@ -1,2 +1,15 @@
-numpy>=1.26
-torch>=2.0
+# Core ML & Numerical Computing
+numpy>=1.26.0
+torch>=2.0.0
+
+# Evaluation, Tabular Models & Experimentation
+scikit-learn>=1.3.0
+pandas>=2.0.0
+xgboost>=2.0.0
+matplotlib>=3.8.0
+
+# Telemetry & Monitoring Infrastructure
+docker>=7.0.0
+
+# Visualization & Interactive Dashboard
+streamlit>=1.30.0

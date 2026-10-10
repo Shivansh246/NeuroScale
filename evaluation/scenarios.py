@@ -12,6 +12,7 @@ def normalize_trace_step(step: Dict[str, Any]) -> Dict[str, Any]:
     # Feature columns expected by Transformer & Autoencoder:
     # ["cpu_percent", "cpu_usage_ns", "memory_usage_mb", "memory_percent"]
     cpu_ns = int(step.get("cpu_usage_ns", int(cpu * 1e7)))
+    cpu_delta = int(step.get("cpu_usage_ns_delta", cpu_ns))
     mem_pct = float(step.get("memory_percent", (mem / 1024.0) * 100.0))
 
     return {
@@ -21,6 +22,7 @@ def normalize_trace_step(step: Dict[str, Any]) -> Dict[str, Any]:
         "mem_util": mem,
         "cpu_percent": cpu,
         "cpu_usage_ns": cpu_ns,
+        "cpu_usage_ns_delta": cpu_delta,
         "memory_usage_mb": mem,
         "memory_percent": mem_pct,
     }

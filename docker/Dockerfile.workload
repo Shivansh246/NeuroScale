@@ -1,0 +1,23 @@
+# Dockerfile for NeuroScale controlled container workloads
+FROM python:3.11-slim
+
+# Avoid buffering for immediate real-time logging
+ENV PYTHONUNBUFFERED=1
+
+WORKDIR /app
+
+# Install standard systems benchmarking utilities
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    iproute2 \
+    procps \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy workload scripts into container
+COPY workload/ /app/workload/
+
+# Expose lightweight port for control or network pinging if needed
+EXPOSE 8080
+
+# Default command enters dormant state ready for workload invocation
+CMD ["python3", "-m", "workload.workload", "--mode", "idle", "--duration", "3600"]

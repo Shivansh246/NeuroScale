@@ -1,0 +1,97 @@
+{
+  "experiment_id": "78dd1eea-ba03-4ee2-a136-e46abd97fa3a",
+  "created_at_utc": "2026-10-10T07:10:15.845515+00:00",
+  "start_time_utc": "2026-10-10T07:07:14.838585+00:00",
+  "end_time_utc": "2026-10-10T07:10:15.672862+00:00",
+  "random_seed": 42,
+  "environment": {
+    "os": "macOS-27.0.1-arm64-arm-64bit-Mach-O",
+    "system": "Darwin",
+    "release": "27.0.0",
+    "machine": "arm64",
+    "python_version": "3.14.7",
+    "python_compiler": "Clang 21.0.0 (clang-2100.1.1.101)",
+    "docker_version": "29.8.2",
+    "cpu_count": 10,
+    "total_ram_bytes": 17179869184,
+    "total_ram_gb": 16.0
+  },
+  "configuration": {
+    "experiment": {
+      "name": "real_workload_benchmark",
+      "seed": 42,
+      "duration_seconds": 180,
+      "sampling_interval_seconds": 1.0
+    },
+    "containers": {
+      "concurrent_instances": 2,
+      "base_image": "neuroscale-workload:latest",
+      "network_name": "neuroscale_bench_net",
+      "resource_constraints": {
+        "cpus": 2.0,
+        "memory_mb": 512
+      }
+    },
+    "workload_randomization": {
+      "enabled": true,
+      "min_phase_duration_seconds": 15,
+      "max_phase_duration_seconds": 60,
+      "profile_weights": {
+        "cpu_intensive": 0.4,
+        "memory_intensive": 0.3,
+        "mixed": 0.3,
+        "idle": 0.0,
+        "disk_io_intensive": 0.0,
+        "network_intensive": 0.0
+      },
+      "intensity_ranges": {
+        "cpu_utilization_target": [
+          20,
+          100
+        ],
+        "memory_allocation_mb": [
+          128,
+          896
+        ],
+        "io_block_size_kb": [
+          4,
+          1024
+        ],
+        "network_packet_rate_mbps": [
+          5,
+          100
+        ]
+      }
+    },
+    "export": {
+      "export_csv": true,
+      "export_jsonl": true,
+      "sync_to_data_raw_metrics": true,
+      "datasets_dir": "datasets"
+    }
+  },
+  "experiment_summary": {
+    "experiment_id": "78dd1eea-ba03-4ee2-a136-e46abd97fa3a",
+    "experiment_name": "real_workload_benchmark",
+    "start_time_utc": "2026-10-10T07:07:14.838585+00:00",
+    "end_time_utc": "2026-10-10T07:10:15.672862+00:00",
+    "duration_seconds": 180.83,
+    "completed": true,
+    "containers_executed": 2,
+    "records": {
+      "collected": 180,
+      "accepted": 180,
+      "rejected": 0,
+      "restart_events": 0
+    },
+    "validation_detail": {
+      "accepted": 180,
+      "rejected": 0,
+      "warnings": 0,
+      "missing_fields": 0,
+      "type_mismatches": 0,
+      "container_restarts": 0
+    },
+    "output_files": {}
+  }
+}

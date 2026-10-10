@@ -12,7 +12,7 @@ import numpy as np
 
 from data.config import PipelineConfig
 from data.validation import validate_record, validate_records
-from data.preprocessing import load_jsonl, resample_records
+from data.preprocessing import load_jsonl, resample_records, TelemetryFeaturePipeline
 from data.normalization import Normalizer
 from data.dataset import load_dataset
 
@@ -88,9 +88,9 @@ class TestDataPipeline(unittest.TestCase):
     def test_normalizer_fit_transform(self):
         loaded = load_jsonl(self.raw_path)
         resampled = resample_records(loaded)
-        # Extract feature array directly
-        feature_cols = self.cfg.feature_columns
-        feats = np.array([[r[col] for col in feature_cols] for r in resampled], dtype=float)
+        pipeline = TelemetryFeaturePipeline(feature_columns=self.cfg.feature_columns)
+        processed = pipeline.process_records(resampled)
+        feats = pipeline.extract_feature_sequence(processed, self.cfg.feature_columns)
         norm = Normalizer().fit(feats)
         transformed = norm.transform(feats)
         # Mean of transformed should be approx 0, std approx 1
