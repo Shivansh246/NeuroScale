@@ -14,3 +14,4 @@ data/*.jsonl
 data/*.json
 data/*.csv
 .streamlit/
+.DS_Store

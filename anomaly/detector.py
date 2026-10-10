@@ -118,7 +118,7 @@ class AutoencoderAnomalyDetector:
 
         feature_columns: List[str] = ckpt.get(
             "feature_columns",
-            ["cpu_percent", "cpu_usage_ns", "memory_usage_mb", "memory_percent"],
+            ["cpu_percent", "cpu_usage_ns_delta", "memory_usage_mb", "memory_percent"],
         )
         seq_len: int = ckpt.get("seq_len", 12)
         threshold: float = ckpt.get("threshold", float("inf"))

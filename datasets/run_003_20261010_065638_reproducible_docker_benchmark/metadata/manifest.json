@@ -1,0 +1,24 @@
+{
+  "experiment_id": "a7130b1f-6e39-4a03-b057-5446148b58e8",
+  "created_at_utc": "2026-10-10T07:01:42.054560+00:00",
+  "validation_status": "PASS",
+  "files": {
+    "jsonl": {
+      "path": "metrics.jsonl",
+      "size_bytes": 148959,
+      "sha256": "fe9ae13e53aedc1a27d871857e0c823f10bbf6863423059c6fb833f6b7469522",
+      "records_count": 300
+    },
+    "csv": {
+      "path": "metrics.csv",
+      "size_bytes": 57396,
+      "sha256": "19e4fc3d65f1f1084ffedb5d5a2869e628a5e243d40562dba82efa780935cecb",
+      "records_count": 301
+    },
+    "metadata": {
+      "path": "dataset_metadata.json",
+      "size_bytes": 2536,
+      "sha256": "92f87dc61b478994544e8c72b87e0a5806cfe78a3c598aeb38f5a243d85e3aab"
+    }
+  }
+}

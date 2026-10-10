@@ -150,7 +150,7 @@ def _make_checkpoint(
 ) -> str:
     """Build and save a minimal checkpoint; return its path."""
     if feature_columns is None:
-        feature_columns = ["cpu_percent", "cpu_usage_ns", "memory_usage_mb", "memory_percent"]
+        feature_columns = ["cpu_percent", "cpu_usage_ns_delta", "memory_usage_mb", "memory_percent"]
     if target_columns is None:
         target_columns = ["cpu_percent", "memory_percent"]
 

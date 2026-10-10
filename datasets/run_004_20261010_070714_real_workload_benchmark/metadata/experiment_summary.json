@@ -1,0 +1,28 @@
+{
+  "experiment_id": "78dd1eea-ba03-4ee2-a136-e46abd97fa3a",
+  "experiment_name": "real_workload_benchmark",
+  "start_time_utc": "2026-10-10T07:07:14.838585+00:00",
+  "end_time_utc": "2026-10-10T07:10:15.672862+00:00",
+  "duration_seconds": 180.83,
+  "completed": true,
+  "containers_executed": 2,
+  "records": {
+    "collected": 180,
+    "accepted": 180,
+    "rejected": 0,
+    "restart_events": 0
+  },
+  "validation_detail": {
+    "accepted": 180,
+    "rejected": 0,
+    "warnings": 0,
+    "missing_fields": 0,
+    "type_mismatches": 0,
+    "container_restarts": 0
+  },
+  "output_files": {
+    "metadata": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/datasets/run_004_20261010_070714_real_workload_benchmark/metadata/dataset_metadata.json",
+    "manifest": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/datasets/run_004_20261010_070714_real_workload_benchmark/metadata/manifest.json",
+    "raw_metrics": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/data/raw_metrics.jsonl"
+  }
+}

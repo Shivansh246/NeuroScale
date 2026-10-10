@@ -46,7 +46,7 @@ class AutoencoderConfig:
     threshold_k: float = 3.0
     feature_columns: List[str] = field(default_factory=lambda: [
         "cpu_percent",
-        "cpu_usage_ns",
+        "cpu_usage_ns_delta",
         "memory_usage_mb",
         "memory_percent",
     ])

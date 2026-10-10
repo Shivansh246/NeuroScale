@@ -1,0 +1,28 @@
+{
+  "experiment_id": "a7130b1f-6e39-4a03-b057-5446148b58e8",
+  "experiment_name": "reproducible_docker_benchmark",
+  "start_time_utc": "2026-10-10T06:56:38.895674+00:00",
+  "end_time_utc": "2026-10-10T07:01:41.088590+00:00",
+  "duration_seconds": 302.19,
+  "completed": true,
+  "containers_executed": 2,
+  "records": {
+    "collected": 300,
+    "accepted": 300,
+    "rejected": 0,
+    "restart_events": 0
+  },
+  "validation_detail": {
+    "accepted": 300,
+    "rejected": 0,
+    "warnings": 0,
+    "missing_fields": 0,
+    "type_mismatches": 0,
+    "container_restarts": 0
+  },
+  "output_files": {
+    "metadata": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/datasets/run_003_20261010_065638_reproducible_docker_benchmark/metadata/dataset_metadata.json",
+    "manifest": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/datasets/run_003_20261010_065638_reproducible_docker_benchmark/metadata/manifest.json",
+    "raw_metrics": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/data/raw_metrics.jsonl"
+  }
+}

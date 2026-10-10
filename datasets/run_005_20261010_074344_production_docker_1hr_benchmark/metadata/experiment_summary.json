@@ -1,0 +1,28 @@
+{
+  "experiment_id": "083761bd-29f8-4bb9-a841-02559c559da7",
+  "experiment_name": "production_docker_1hr_benchmark",
+  "start_time_utc": "2026-10-10T07:43:44.478774+00:00",
+  "end_time_utc": "2026-10-10T08:43:46.633116+00:00",
+  "duration_seconds": 3602.15,
+  "completed": true,
+  "containers_executed": 2,
+  "records": {
+    "collected": 3578,
+    "accepted": 3578,
+    "rejected": 0,
+    "restart_events": 0
+  },
+  "validation_detail": {
+    "accepted": 3578,
+    "rejected": 0,
+    "warnings": 0,
+    "missing_fields": 0,
+    "type_mismatches": 0,
+    "container_restarts": 0
+  },
+  "output_files": {
+    "metadata": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/datasets/run_005_20261010_074344_production_docker_1hr_benchmark/metadata/dataset_metadata.json",
+    "manifest": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/datasets/run_005_20261010_074344_production_docker_1hr_benchmark/metadata/manifest.json",
+    "raw_metrics": "/Users/pratikyadav/Documents/Codes/os_project/NeuroScale/data/raw_metrics.jsonl"
+  }
+}

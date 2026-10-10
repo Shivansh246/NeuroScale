@@ -137,7 +137,7 @@ class TestRealModelClosedLoop(unittest.TestCase):
         # Create a valid 12x4 sequence
         seq = np.zeros((12, 4), dtype=np.float32)
         seq[:, 0] = 30.0    # cpu_percent
-        seq[:, 1] = 3e8     # cpu_usage_ns
+        seq[:, 1] = 3e8     # cpu_usage_ns_delta
         seq[:, 2] = 200.0   # memory_usage_mb
         seq[:, 3] = 20.0    # memory_percent
 

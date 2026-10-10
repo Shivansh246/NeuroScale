@@ -67,7 +67,7 @@ SEQ_LEN = 8
 N_FEATS = 4
 INPUT_DIM = SEQ_LEN * N_FEATS   # 32
 
-FEATURE_COLS = ["cpu_percent", "cpu_usage_ns", "memory_usage_mb", "memory_percent"]
+FEATURE_COLS = ["cpu_percent", "cpu_usage_ns_delta", "memory_usage_mb", "memory_percent"]
 
 
 def _make_cfg(**kwargs) -> AutoencoderConfig:
